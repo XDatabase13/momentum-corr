@@ -5,6 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>モメンタム銘柄 相関係数 | xdbdb.com</title>
 <meta name="description" content="AI半導体テーマ18銘柄の日次リターン相関係数を毎朝更新。群れがいつ崩れ始めるかを相関ヒートマップで可視化。">
+<link rel="canonical" href="https://xdbdb.com/momentum-corr/">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="xdbdb.com">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="モメンタム銘柄 相関係数 | xdbdb.com">
+<meta property="og:description" content="AI半導体テーマ18銘柄の日次リターン相関係数を毎朝更新。群れがいつ崩れ始めるかを相関ヒートマップで可視化。">
+<meta property="og:url" content="https://xdbdb.com/momentum-corr/">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="モメンタム銘柄 相関係数 | xdbdb.com">
+<meta name="twitter:description" content="AI半導体テーマ18銘柄の日次リターン相関係数を毎朝更新。群れがいつ崩れ始めるかを相関ヒートマップで可視化。">
+<!-- JSON-LD -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://xdbdb.com/momentum-corr/",
+      "url": "https://xdbdb.com/momentum-corr/",
+      "name": "モメンタム銘柄 相関係数",
+      "description": "AI半導体テーマ18銘柄の日次リターン相関係数を毎朝更新。群れがいつ崩れ始めるかを相関ヒートマップで可視化。",
+      "inLanguage": "ja",
+      "isPartOf": { "@id": "https://xdbdb.com/#website" }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://xdbdb.com/#website",
+      "url": "https://xdbdb.com/",
+      "name": "xdbdb.com",
+      "inLanguage": "ja"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "xdbdb.com", "item": "https://xdbdb.com/" },
+        { "@type": "ListItem", "position": 2, "name": "モメンタム銘柄 相関係数", "item": "https://xdbdb.com/momentum-corr/" }
+      ]
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -193,6 +236,24 @@ h1 { font-size: clamp(1.3rem,4vw,1.9rem); font-weight: 900; letter-spacing: -.01
   background: rgba(248,81,73,.1); border: 1px solid rgba(248,81,73,.3); color: #ffb4b0;
 }
 
+/* ── About ── */
+.about-block { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; }
+.about-h2 { font-size: 1rem; font-weight: 700; margin-bottom: 12px; line-height: 1.5; }
+.about-h3 { font-size: .84rem; font-weight: 700; color: var(--sub); margin: 18px 0 8px; }
+.about-block p { font-size: .82rem; color: var(--sub); line-height: 1.9; }
+.about-block p + p { margin-top: 8px; }
+.ticker-list {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 4px 16px; list-style: none;
+  font-size: .8rem; color: var(--sub);
+}
+.tl-code { font-family: var(--mono); font-size: .72rem; color: var(--dim); margin-right: 6px; }
+.corr-table { width: 100%; border-collapse: collapse; font-size: .8rem; margin-top: 4px; }
+.corr-table th { font-family: var(--mono); font-size: .68rem; color: var(--dim); text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+.corr-table td { padding: 5px 8px; border-bottom: 1px solid var(--line); color: var(--sub); vertical-align: top; }
+.corr-table tr:last-child td { border-bottom: none; }
+.corr-rho { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+
 /* ── Disclaimer ── */
 .disclaimer {
   margin-top: 14px; padding: 18px 20px;
@@ -346,6 +407,50 @@ footer {
       </thead>
       <tbody id="drilldown-tbody"></tbody>
     </table>
+  </section>
+
+  <!-- Section: このページについて -->
+  <section class="section">
+    <div class="section-title">このページについて</div>
+    <div class="about-block">
+      <h2 class="about-h2">AI半導体・モメンタム銘柄 18銘柄の相関係数ダッシュボード（毎朝自動更新）</h2>
+      <p>東京証券取引所に上場するAI半導体関連・高モメンタム銘柄18銘柄について、日次リターン（前日比）のピアソン相関係数を毎朝自動計算し、ヒートマップ・ペアランキング・軸銘柄ドリルダウンとして可視化しています。計算期間は10日・30日・50日から切り替え可能で、短期の急変から中期のトレンドまで銘柄間の連動性を多角的に確認できます。</p>
+      <p>「群れの強さ（平均相関）」が高いほど全銘柄が一体となって動く相場環境を示し、低下してきたときは個別株格差が広がるサインとして読み取れます。高相関ペアと低相関ペアのランキングは、資金分散・ヘッジ先検討の参考としてご活用ください。</p>
+
+      <h3 class="about-h3">対象銘柄（18銘柄）</h3>
+      <ul class="ticker-list">
+        <li><span class="tl-code">8035</span>東京エレクトロン</li>
+        <li><span class="tl-code">6920</span>レーザーテック</li>
+        <li><span class="tl-code">9984</span>ソフトバンクグループ</li>
+        <li><span class="tl-code">6723</span>ルネサスエレクトロニクス</li>
+        <li><span class="tl-code">285A</span>キオクシアHLDG</li>
+        <li><span class="tl-code">7735</span>SCREEN HLDG</li>
+        <li><span class="tl-code">6525</span>KOKUSAI ELECTRIC</li>
+        <li><span class="tl-code">3436</span>SUMCO</li>
+        <li><span class="tl-code">4062</span>イビデン</li>
+        <li><span class="tl-code">6762</span>TDK</li>
+        <li><span class="tl-code">6981</span>村田製作所</li>
+        <li><span class="tl-code">6976</span>太陽誘電</li>
+        <li><span class="tl-code">4004</span>レゾナック・HLDG</li>
+        <li><span class="tl-code">6752</span>パナソニックHLDG</li>
+        <li><span class="tl-code">5803</span>フジクラ</li>
+        <li><span class="tl-code">5801</span>古河電気工業</li>
+        <li><span class="tl-code">5706</span>三井金属</li>
+        <li><span class="tl-code">6098</span>リクルートHLDG</li>
+      </ul>
+
+      <h3 class="about-h3">相関係数（ρ）の読み方</h3>
+      <table class="corr-table">
+        <thead><tr><th>ρの範囲</th><th>意味</th></tr></thead>
+        <tbody>
+          <tr><td><span class="corr-rho" style="color:var(--blue)">0.8 〜 1.0</span></td><td>非常に強い正の相関。ほぼ同じ方向に動く。</td></tr>
+          <tr><td><span class="corr-rho" style="color:var(--blue)">0.5 〜 0.8</span></td><td>中程度〜強い正の相関。おおむね連動する。</td></tr>
+          <tr><td><span class="corr-rho" style="color:var(--sub)">0.2 〜 0.5</span></td><td>弱い〜中程度の正の相関。やや連動する。</td></tr>
+          <tr><td><span class="corr-rho" style="color:var(--dim)">0.0 〜 0.2</span></td><td>ほぼ無相関。独立した値動きをしやすい。</td></tr>
+          <tr><td><span class="corr-rho" style="color:var(--red)">0.0 未満</span></td><td>負の相関。片方が上がるともう片方は下がりやすい。</td></tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <!-- Section: 注記 -->
