@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>モメンタム銘柄 相関係数 | xdbdb.com</title>
+<meta name="description" content="AI半導体テーマ18銘柄の日次リターン相関係数を毎朝更新。群れがいつ崩れ始めるかを相関ヒートマップで可視化。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0a0e14;
+  --panel:  #121823;
+  --panel2: #0e141d;
+  --line:   #1e2733;
+  --ink:    #e6edf3;
+  --sub:    #a8b3c0;
+  --dim:    #7c8a9c;
+  --accent: #d4a548;
+  --green:  #3fb950;
+  --blue:   #58a6ff;
+  --red:    #f85149;
+  --mono:   'Roboto Mono', monospace;
+  --sans:   'Zen Kaku Gothic New', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--sans); line-height: 1.7;
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 940px; margin: 0 auto; padding: 0 20px 72px; }
+
+/* ── Breadcrumb ── */
+.breadcrumb {
+  padding: 10px 0; font-family: var(--mono); font-size: .72rem;
+  color: var(--dim); border-bottom: 1px solid var(--line); margin-bottom: 22px;
+}
+.breadcrumb a { color: var(--sub); }
+.breadcrumb .sep { margin: 0 6px; }
+
+/* ── Header ── */
+header { padding: 8px 0 22px; border-bottom: 1px solid var(--line); }
+.kicker {
+  font-family: var(--mono); font-size: .68rem;
+  letter-spacing: .24em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 10px;
+}
+h1 { font-size: clamp(1.3rem,4vw,1.9rem); font-weight: 900; letter-spacing: -.01em; line-height: 1.2; }
+.tagline { color: var(--sub); font-size: .88rem; margin-top: 10px; max-width: 600px; }
+.header-meta {
+  display: flex; flex-wrap: wrap; gap: 6px 20px;
+  margin-top: 14px; font-family: var(--mono); font-size: .72rem; color: var(--dim);
+}
+.header-meta b { color: var(--sub); font-weight: 500; }
+
+/* ── Period tabs ── */
+.period-tabs { display: flex; gap: 6px; margin-top: 26px; }
+.period-tab {
+  font-family: var(--mono); font-size: .8rem; font-weight: 700;
+  padding: 7px 20px; border: 1px solid var(--line); border-radius: 7px;
+  background: transparent; color: var(--sub); cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.period-tab:hover { border-color: var(--sub); color: var(--ink); }
+.period-tab.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+/* ── Section ── */
+.section { margin-top: 36px; }
+.section-title {
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 16px; font-weight: 700;
+}
+
+/* ── Herd strength ── */
+.herd-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 22px 24px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;
+}
+.herd-main { min-width: 140px; }
+.herd-main-label { font-family: var(--mono); font-size: .67rem; letter-spacing: .1em; text-transform: uppercase; color: var(--sub); margin-bottom: 6px; }
+.herd-value {
+  font-family: var(--mono); font-size: 3rem; font-weight: 700;
+  letter-spacing: -.03em; line-height: 1; color: var(--accent);
+}
+.herd-period-badge {
+  display: inline-block; margin-top: 8px; font-family: var(--mono); font-size: .68rem;
+  color: var(--dim); background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 4px; padding: 2px 8px;
+}
+.herd-pairs { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+.herd-pair-row { font-size: .84rem; color: var(--sub); line-height: 1.5; }
+.herd-pair-tag { font-family: var(--mono); font-size: .66rem; color: var(--dim); margin-right: 6px; }
+.herd-pair-val { font-family: var(--mono); font-weight: 500; }
+
+/* ── Heatmap ── */
+.heatmap-scroll { overflow-x: auto; margin-top: 4px; }
+.heatmap-tbl { border-collapse: collapse; }
+.hm-corner { width: 52px; min-width: 52px; }
+.hm-col {
+  width: 32px; min-width: 32px; height: 26px;
+  font-family: var(--mono); font-size: .56rem; color: var(--sub);
+  text-align: center; vertical-align: bottom; padding-bottom: 3px;
+  font-weight: 400; cursor: default;
+}
+.hm-row {
+  width: 52px; min-width: 52px;
+  font-family: var(--mono); font-size: .58rem; color: var(--sub);
+  text-align: right; padding-right: 6px; vertical-align: middle;
+  font-weight: 400; white-space: nowrap; cursor: default;
+}
+.hm-cell {
+  width: 32px; height: 32px; min-width: 32px;
+  border: 1px solid rgba(30,39,51,.6); cursor: crosshair;
+}
+.hm-diag { border: 1px solid rgba(212,165,72,.25); }
+
+/* ── Heatmap legend ── */
+.hm-legend {
+  display: flex; flex-wrap: wrap; gap: 8px 14px;
+  margin-top: 14px; font-family: var(--mono); font-size: .66rem; color: var(--sub);
+}
+.hm-legend-item { display: flex; align-items: center; gap: 5px; }
+.hm-legend-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── Tooltip ── */
+#hm-tip {
+  position: absolute; display: none; pointer-events: none;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  font-family: var(--mono); font-size: .74rem; color: var(--ink);
+  padding: 5px 10px; white-space: nowrap; z-index: 999;
+  box-shadow: 0 4px 12px rgba(0,0,0,.5);
+}
+
+/* ── Ranking ── */
+.ranking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width:640px) { .ranking-grid { grid-template-columns: 1fr; } }
+.ranking-subtitle {
+  font-family: var(--mono); font-size: .67rem; color: var(--sub);
+  letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px;
+}
+.rank-tbl {
+  width: 100%; border-collapse: collapse; font-size: .82rem;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  overflow: hidden;
+}
+.rank-tbl th {
+  font-family: var(--mono); font-size: .64rem; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--dim); font-weight: 500;
+  padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left;
+}
+.rank-tbl td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.rank-tbl tr:last-child td { border-bottom: none; }
+.rank-num { font-family: var(--mono); font-size: .7rem; color: var(--dim); width: 26px; }
+.rank-pair { font-size: .8rem; }
+.rank-pair-badge { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: middle; flex-shrink: 0; }
+.rank-rho { font-family: var(--mono); font-weight: 600; font-size: .82rem; text-align: right; width: 54px; }
+
+/* ── Drilldown ── */
+.drilldown-ctrl { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.drilldown-ctrl label { font-size: .84rem; color: var(--sub); }
+.drilldown-sel {
+  font-family: var(--mono); font-size: .78rem; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 6px 10px; cursor: pointer;
+}
+.drilldown-sel:focus { outline: 1px solid var(--accent); }
+.drilldown-heading { font-size: .84rem; color: var(--sub); margin-bottom: 10px; }
+.dd-tbl {
+  width: 100%; border-collapse: collapse; font-size: .82rem;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+}
+.dd-tbl th {
+  font-family: var(--mono); font-size: .64rem; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--dim); font-weight: 500;
+  padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left;
+}
+.dd-tbl td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.dd-tbl tr:last-child td { border-bottom: none; }
+.dd-code { font-family: var(--mono); font-size: .75rem; color: var(--sub); width: 48px; }
+.dd-name { font-size: .82rem; }
+.dd-rho { font-family: var(--mono); font-weight: 600; text-align: right; width: 54px; }
+.dd-badge-cell { width: 24px; }
+.dd-badge { display: inline-block; width: 12px; height: 20px; border-radius: 3px; }
+
+/* ── Alert banner ── */
+.banner {
+  margin-top: 18px; padding: 10px 14px; border-radius: 8px;
+  font-size: .82rem; display: none;
+  background: rgba(248,81,73,.1); border: 1px solid rgba(248,81,73,.3); color: #ffb4b0;
+}
+
+/* ── Disclaimer ── */
+.disclaimer {
+  margin-top: 14px; padding: 18px 20px;
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 12px;
+  font-size: .78rem; color: var(--sub); line-height: 1.9;
+}
+.disclaimer-title {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 10px; font-weight: 700;
+}
+.disclaimer p + p { margin-top: 8px; }
+
+.chart-note { font-size: .78rem; color: var(--sub); margin-bottom: 10px; line-height: 1.75; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a href="https://xdbdb.com/">xdbdb.com</a>
+    <span class="sep">›</span>
+    モメンタム銘柄 相関係数
+  </nav>
+
+  <!-- Header -->
+  <header>
+    <div class="kicker">CORRELATION MATRIX — JP MOMENTUM</div>
+    <h1>モメンタム銘柄 相関係数</h1>
+    <p class="tagline">AI半導体テーマ18銘柄の日次リターン相関係数。群れがいつ崩れ始めるか——結束の強弱を毎朝チェック。</p>
+    <div class="header-meta">
+      <span><b>更新</b> 毎朝1回</span>
+      <span id="meta-generated"><b>生成</b> —</span>
+      <span id="meta-fetch"><b>データ</b> —</span>
+    </div>
+  </header>
+
+  <!-- Alert -->
+  <div class="banner" id="alert-banner"></div>
+
+  <!-- Period tabs -->
+  <div class="period-tabs">
+    <button class="period-tab" data-period="10" onclick="setPeriod('10')">10日</button>
+    <button class="period-tab" data-period="30" onclick="setPeriod('30')">30日</button>
+    <button class="period-tab active" data-period="50" onclick="setPeriod('50')">50日</button>
+  </div>
+
+  <!-- Section: 群れの強さ -->
+  <section class="section">
+    <div class="section-title">群れの強さ（平均相関）</div>
+    <div class="herd-card">
+      <div class="herd-main">
+        <div class="herd-main-label">平均相関係数</div>
+        <div class="herd-value" id="herd-mean">—</div>
+        <div class="herd-period-badge" id="herd-period-badge">50日</div>
+      </div>
+      <div class="herd-pairs">
+        <div class="herd-pair-row">
+          <span class="herd-pair-tag">最も連動</span>
+          <span class="herd-pair-val" id="herd-top">—</span>
+        </div>
+        <div class="herd-pair-row">
+          <span class="herd-pair-tag">最も独立</span>
+          <span class="herd-pair-val" id="herd-bot">—</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: ヒートマップ -->
+  <section class="section">
+    <div class="section-title">相関ヒートマップ（18 × 18）</div>
+    <p class="chart-note">色のみ表示。セルにホバー / タップで銘柄名とρ値を表示。並びは相関クラスタ順（50日基準・固定）。</p>
+    <div class="heatmap-scroll">
+      <div id="heatmap-container"></div>
+    </div>
+    <div class="hm-legend" id="hm-legend">
+      <div class="hm-legend-item"><div class="hm-legend-swatch" style="background:rgba(248,81,73,0.72)"></div>ρ &lt; 0</div>
+      <div class="hm-legend-item"><div class="hm-legend-swatch" style="background:rgba(248,81,73,0.18)"></div>0 〜 0.2</div>
+      <div class="hm-legend-item"><div class="hm-legend-swatch" style="background:rgba(88,166,255,0.12)"></div>0.2 〜 0.35</div>
+      <div class="hm-legend-item"><div class="hm-legend-swatch" style="background:rgba(88,166,255,0.30)"></div>0.35 〜 0.5</div>
+      <div class="hm-legend-item"><div class="hm-legend-swatch" style="background:rgba(88,166,255,0.55)"></div>0.5 〜 0.65</div>
+      <div class="hm-legend-item"><div class="hm-legend-swatch" style="background:rgba(88,166,255,0.78)"></div>0.65 〜 0.8</div>
+      <div class="hm-legend-item"><div class="hm-legend-swatch" style="background:rgba(88,166,255,1.00)"></div>≥ 0.8</div>
+    </div>
+  </section>
+
+  <!-- Section: ペアランキング -->
+  <section class="section">
+    <div class="section-title">ペアランキング（Top 10）</div>
+    <div class="ranking-grid">
+      <div>
+        <div class="ranking-subtitle">高い順（最も連動）</div>
+        <table class="rank-tbl">
+          <thead><tr><th>#</th><th>ペア</th><th style="text-align:right">ρ</th></tr></thead>
+          <tbody id="rank-high"></tbody>
+        </table>
+      </div>
+      <div>
+        <div class="ranking-subtitle">低い順（最も独立 / 逆相関）</div>
+        <table class="rank-tbl">
+          <thead><tr><th>#</th><th>ペア</th><th style="text-align:right">ρ</th></tr></thead>
+          <tbody id="rank-low"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: 軸銘柄ドリルダウン -->
+  <section class="section">
+    <div class="section-title">軸銘柄ドリルダウン</div>
+    <div class="drilldown-ctrl">
+      <label>銘柄を選択:</label>
+      <select class="drilldown-sel" id="drilldown-select" onchange="onDrilldownChange()"></select>
+    </div>
+    <div class="drilldown-heading" id="drilldown-heading"></div>
+    <table class="dd-tbl">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>コード</th>
+          <th>銘柄名</th>
+          <th style="text-align:right">ρ</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="drilldown-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- Section: 注記 -->
+  <section class="section">
+    <div class="disclaimer">
+      <div class="disclaimer-title">注記・免責</div>
+      <p><b>10日相関について:</b> サンプル点が10本と少なく統計的に不安定です。1日の大きな値動きで数値が大きく振れることがあります。これは欠陥ではなく「直近の急変を捉える短期レーダー」として意図的に提供しています。</p>
+      <p><b>銘柄選定基準:</b> ①売買代金上位かつ直近3ヶ月騰落率50%以上の銘柄を基本ルールとして選定。②当日ストップ高等、直近で急騰し話題性の高い銘柄を管理人の編集判断で追加しています（フジクラ5803等）。銘柄リストは全期間固定です。</p>
+      <p><b>相関係数の限界:</b> 相関は因果関係ではありません。また過去の日次リターンに基づく計算であり、将来の連動性を保証するものではありません。</p>
+      <p><b>データ:</b> yfinance経由で取得した日足終値（調整済み）を使用。日次リターン（単純リターン: r_t = 終値_t/終値_{t-1}−1）のピアソン相関を計算。終値水準そのものの相関は計算していません。</p>
+    </div>
+  </section>
+
+</div><!-- /wrap -->
+
+<!-- Tooltip -->
+<div id="hm-tip"></div>
+
+<script>
+'use strict';
+
+// ── 定数 ──
+const CODE_TO_NAME = {
+  '285A': 'キオクシアHLDG',
+  '6976': '太陽誘電',
+  '9984': 'ソフトバンクグループ',
+  '6981': '村田製作所',
+  '8035': '東京エレクトロン',
+  '6920': 'レーザーテック',
+  '4062': 'イビデン',
+  '5801': '古河電気工業',
+  '5706': '三井金属',
+  '6525': 'KOKUSAI ELECTRIC',
+  '6723': 'ルネサスエレクトロニクス',
+  '4004': 'レゾナック・HLDG',
+  '6762': 'TDK',
+  '6752': 'パナソニックHLDG',
+  '3436': 'SUMCO',
+  '7735': 'SCREEN HLDG',
+  '6098': 'リクルートHLDG',
+  '5803': 'フジクラ',
+};
+
+// ── 状態 ──
+let DATA = null;
+let currentPeriod = '50';
+
+// ── 色スケール（7段階固定・3期間共通） ──
+function corrColor(rho) {
+  if (rho < 0)    return 'rgba(248,81,73,0.72)';
+  if (rho < 0.2)  return 'rgba(248,81,73,0.18)';
+  if (rho < 0.35) return 'rgba(88,166,255,0.12)';
+  if (rho < 0.5)  return 'rgba(88,166,255,0.30)';
+  if (rho < 0.65) return 'rgba(88,166,255,0.55)';
+  if (rho < 0.8)  return 'rgba(88,166,255,0.78)';
+  return 'rgba(88,166,255,1.00)';
+}
+
+function rhoTextColor(rho) {
+  return rho < 0 ? 'var(--red)' : 'var(--blue)';
+}
+
+// ── 期間切替 ──
+function setPeriod(p) {
+  currentPeriod = p;
+  document.querySelectorAll('.period-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.period === p);
+  });
+  document.getElementById('herd-period-badge').textContent = p + '日';
+  renderHerdStrength(p);
+  renderHeatmap(p);
+  renderPairRanking(p);
+  const code = document.getElementById('drilldown-select').value;
+  if (code) renderDrilldown(p, code);
+}
+
+// ── 群れの強さ ──
+function renderHerdStrength(period) {
+  const pd = DATA.periods[period];
+  if (!pd) return;
+  document.getElementById('herd-mean').textContent = pd.stats.mean_corr.toFixed(2);
+
+  const topPair = pd.pair_ranking_high[0];
+  const botPair = pd.pair_ranking_low[0];
+  if (topPair) {
+    const na = CODE_TO_NAME[topPair.a] || topPair.a;
+    const nb = CODE_TO_NAME[topPair.b] || topPair.b;
+    document.getElementById('herd-top').textContent =
+      `${topPair.a}(${na}) × ${topPair.b}(${nb})  ρ=${topPair.rho.toFixed(2)}`;
+  }
+  if (botPair) {
+    const na = CODE_TO_NAME[botPair.a] || botPair.a;
+    const nb = CODE_TO_NAME[botPair.b] || botPair.b;
+    document.getElementById('herd-bot').textContent =
+      `${botPair.a}(${na}) × ${botPair.b}(${nb})  ρ=${botPair.rho.toFixed(2)}`;
+  }
+}
+
+// ── ヒートマップ ──
+function renderHeatmap(period) {
+  const pd = DATA.periods[period];
+  if (!pd) return;
+  const order = DATA.cluster_order;
+  const corr  = pd.corr_matrix;
+  const container = document.getElementById('heatmap-container');
+  container.innerHTML = '';
+
+  const table = document.createElement('table');
+  table.className = 'heatmap-tbl';
+
+  // 列ヘッダー行
+  const tr0 = document.createElement('tr');
+  const corner = document.createElement('th');
+  corner.className = 'hm-corner';
+  tr0.appendChild(corner);
+  order.forEach(code => {
+    const th = document.createElement('th');
+    th.className = 'hm-col';
+    th.textContent = code;
+    th.title = CODE_TO_NAME[code] || code;
+    tr0.appendChild(th);
+  });
+  table.appendChild(tr0);
+
+  // データ行
+  order.forEach(rowCode => {
+    const tr = document.createElement('tr');
+    const rh = document.createElement('th');
+    rh.className = 'hm-row';
+    rh.textContent = rowCode;
+    rh.title = CODE_TO_NAME[rowCode] || rowCode;
+    tr.appendChild(rh);
+    order.forEach(colCode => {
+      const rho = corr[rowCode] && corr[rowCode][colCode] != null
+        ? corr[rowCode][colCode] : 1.0;
+      const td = document.createElement('td');
+      td.className = 'hm-cell' + (rowCode === colCode ? ' hm-diag' : '');
+      td.style.background = corrColor(rho);
+      td.dataset.r   = rowCode;
+      td.dataset.c   = colCode;
+      td.dataset.rho = rho;
+      tr.appendChild(td);
+    });
+    table.appendChild(tr);
+  });
+
+  container.appendChild(table);
+  attachTooltips(table);
+}
+
+function attachTooltips(table) {
+  const tip = document.getElementById('hm-tip');
+  const isTouchDevice = window.matchMedia('(hover: none)').matches;
+
+  table.querySelectorAll('.hm-cell').forEach(cell => {
+    const showTip = (x, y) => {
+      const r = cell.dataset.r;
+      const c = cell.dataset.c;
+      const rho = parseFloat(cell.dataset.rho);
+      const nr = CODE_TO_NAME[r] || r;
+      const nc = CODE_TO_NAME[c] || c;
+      tip.textContent = r === c
+        ? `${r} ${nr}（自己相関 ρ=1.00）`
+        : `${r}(${nr}) × ${c}(${nc})  ρ = ${rho.toFixed(2)}`;
+      tip.style.left = (x + 14) + 'px';
+      tip.style.top  = (y - 44) + 'px';
+      tip.style.display = 'block';
+    };
+
+    if (!isTouchDevice) {
+      cell.addEventListener('mouseenter', (e) => showTip(e.pageX, e.pageY));
+      cell.addEventListener('mousemove',  (e) => showTip(e.pageX, e.pageY));
+      cell.addEventListener('mouseleave', ()  => { tip.style.display = 'none'; });
+    } else {
+      cell.addEventListener('click', (e) => {
+        showTip(e.pageX, e.pageY);
+        setTimeout(() => { tip.style.display = 'none'; }, 2500);
+      });
+    }
+  });
+}
+
+// ── ペアランキング ──
+function renderPairRanking(period) {
+  const pd = DATA.periods[period];
+  if (!pd) return;
+  fillRankTable('rank-high', pd.pair_ranking_high);
+  fillRankTable('rank-low',  pd.pair_ranking_low);
+}
+
+function fillRankTable(id, pairs) {
+  const tbody = document.getElementById(id);
+  tbody.innerHTML = '';
+  pairs.forEach((p, i) => {
+    const na = CODE_TO_NAME[p.a] || p.a;
+    const nb = CODE_TO_NAME[p.b] || p.b;
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td class="rank-num">${i + 1}</td>` +
+      `<td class="rank-pair">` +
+        `<span class="rank-pair-badge" style="background:${corrColor(p.rho)}"></span>` +
+        `${p.a}(${na.slice(0,6)}) × ${p.b}(${nb.slice(0,6)})` +
+      `</td>` +
+      `<td class="rank-rho" style="color:${rhoTextColor(p.rho)}">${p.rho.toFixed(2)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── ドリルダウン ──
+function onDrilldownChange() {
+  const code = document.getElementById('drilldown-select').value;
+  renderDrilldown(currentPeriod, code);
+}
+
+function renderDrilldown(period, code) {
+  const pd = DATA.periods[period];
+  if (!pd || !code || !pd.corr_matrix[code]) return;
+
+  const corr = pd.corr_matrix[code];
+  const others = DATA.cluster_order.filter(c => c !== code);
+  const rows = others
+    .map(c => ({ code: c, name: CODE_TO_NAME[c] || c, rho: corr[c] ?? 0 }))
+    .sort((a, b) => b.rho - a.rho);
+
+  const headName = CODE_TO_NAME[code] || code;
+  document.getElementById('drilldown-heading').textContent =
+    `${code} ${headName} vs 残り17銘柄（${period}日・高い順）`;
+
+  const tbody = document.getElementById('drilldown-tbody');
+  tbody.innerHTML = '';
+  rows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td class="rank-num">${i + 1}</td>` +
+      `<td class="dd-code">${row.code}</td>` +
+      `<td class="dd-name">${row.name}</td>` +
+      `<td class="dd-rho" style="color:${rhoTextColor(row.rho)}">${row.rho.toFixed(2)}</td>` +
+      `<td class="dd-badge-cell"><span class="dd-badge" style="background:${corrColor(row.rho)}"></span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── 初期化 ──
+async function init() {
+  try {
+    const res = await fetch('data.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DATA = await res.json();
+
+    // ヘッダーメタ
+    if (DATA._meta?.generated_at) {
+      document.getElementById('meta-generated').innerHTML =
+        `<b>生成</b> ${DATA._meta.generated_at}`;
+    }
+    if (DATA.summary?.fetch_date) {
+      document.getElementById('meta-fetch').innerHTML =
+        `<b>データ</b> ${DATA.summary.fetch_date}`;
+    }
+
+    // Alerts
+    const msgs = DATA.alerts?.messages ?? [];
+    if (msgs.length > 0) {
+      const banner = document.getElementById('alert-banner');
+      banner.textContent = msgs.join(' / ');
+      banner.style.display = 'block';
+    }
+
+    // ドリルダウン select を構築
+    const sel = document.getElementById('drilldown-select');
+    DATA.cluster_order.forEach(code => {
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = `${code} ${CODE_TO_NAME[code] || ''}`;
+      sel.appendChild(opt);
+    });
+
+    setPeriod('50');
+
+  } catch (e) {
+    const banner = document.getElementById('alert-banner');
+    banner.textContent = `data.json の読み込みに失敗しました: ${e.message}`;
+    banner.style.display = 'block';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
