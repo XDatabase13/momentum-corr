@@ -206,6 +206,24 @@ h1 { font-size: clamp(1.3rem,4vw,1.9rem); font-weight: 900; letter-spacing: -.01
 .disclaimer p + p { margin-top: 8px; }
 
 .chart-note { font-size: .78rem; color: var(--sub); margin-bottom: 10px; line-height: 1.75; }
+
+/* ── Site nav ── */
+.site-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; font-family: var(--mono); }
+.site-nav-label { font-size: .72rem; font-weight: 700; color: var(--sub); margin-right: 4px; }
+.site-nav a {
+  font-size: .78rem; font-weight: 700;
+  color: var(--bg); background: var(--accent);
+  border: 1px solid var(--accent); border-radius: 6px;
+  padding: 5px 14px; text-decoration: none;
+}
+.site-nav a:hover { opacity: .85; }
+
+/* ── Footer ── */
+footer {
+  margin-top: 44px; padding: 22px 0 40px;
+  border-top: 1px solid var(--line);
+  font-size: .76rem; color: var(--dim); line-height: 1.85;
+}
 </style>
 </head>
 <body>
@@ -222,6 +240,13 @@ h1 { font-size: clamp(1.3rem,4vw,1.9rem); font-weight: 900; letter-spacing: -.01
   <header>
     <div class="kicker">CORRELATION MATRIX — JP MOMENTUM</div>
     <h1>モメンタム銘柄 相関係数</h1>
+    <nav class="site-nav">
+      <span class="site-nav-label">数理投資情報部の他の分析 ▶</span>
+      <a href="https://xdbdb.com/sbg-nav/">SBG 理論株価</a>
+      <a href="https://xdbdb.com/crypto-nav/">暗号通貨 mNAV</a>
+      <a href="https://xdbdb.com/kioxia-sandisk/">キオクシア PER</a>
+      <a href="https://xdbdb.com/">トップ</a>
+    </nav>
     <p class="tagline">AI半導体テーマ18銘柄の日次リターン相関係数。群れがいつ崩れ始めるか——結束の強弱を毎朝チェック。</p>
     <div class="header-meta">
       <span><b>更新</b> 毎朝1回</span>
@@ -333,6 +358,19 @@ h1 { font-size: clamp(1.3rem,4vw,1.9rem); font-weight: 900; letter-spacing: -.01
       <p><b>データ:</b> yfinance経由で取得した日足終値（調整済み）を使用。日次リターン（単純リターン: r_t = 終値_t/終値_{t-1}−1）のピアソン相関を計算。終値水準そのものの相関は計算していません。</p>
     </div>
   </section>
+
+  <!-- Footer -->
+  <footer>
+    <nav class="site-nav" style="margin-bottom:16px;margin-top:0">
+      <span class="site-nav-label">数理投資情報部の他の分析 ▶</span>
+      <a href="https://xdbdb.com/sbg-nav/">SBG 理論株価</a>
+      <a href="https://xdbdb.com/crypto-nav/">暗号通貨 mNAV</a>
+      <a href="https://xdbdb.com/kioxia-sandisk/">キオクシア PER</a>
+      <a href="https://xdbdb.com/">トップ</a>
+    </nav>
+    データ: yfinance経由 日足終値（調整済み）/ 日次自動更新（毎朝）<br>
+    <a href="https://xdbdb.com">← xdbdb.com トップへ</a>
+  </footer>
 
 </div><!-- /wrap -->
 
