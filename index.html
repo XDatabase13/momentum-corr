@@ -285,6 +285,41 @@ footer {
   border-top: 1px solid var(--line);
   font-size: .76rem; color: var(--dim); line-height: 1.85;
 }
+
+/* ── Lead text panel ── */
+.lead-text {
+  margin-top: 20px;
+  padding: 14px 18px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: .88rem;
+  color: var(--sub);
+  line-height: 1.85;
+}
+
+/* ── SEO section ── */
+.seo-section {
+  margin-top: 44px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.seo-section h2 {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 26px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.seo-section h2:first-of-type { margin-top: 0; }
+.seo-section p {
+  font-size: .84rem;
+  color: var(--sub);
+  line-height: 1.9;
+  margin-top: 4px;
+}
+.seo-section p + p { margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -309,13 +344,14 @@ footer {
       <a href="https://xdbdb.com/ai-manifold/">AI業界地図</a>
       <a href="https://xdbdb.com/">トップ</a>
     </nav>
-    <p class="tagline">AI半導体テーマ18銘柄の日次リターン相関係数。群れがいつ崩れ始めるか——結束の強弱を毎朝チェック。</p>
     <div class="header-meta">
       <span><b>更新</b> 毎朝1回</span>
       <span id="meta-generated"><b>生成</b> —</span>
       <span id="meta-fetch"><b>データ</b> —</span>
     </div>
   </header>
+
+  <div class="lead-text">AI半導体関連の日本株18銘柄について、日次リターンの相関係数を毎朝自動計算し、ヒートマップで可視化します。「群れ」がどれだけ一体で動いているか、その結束がいつ崩れ始めるかを読み取れます。</div>
 
   <!-- Alert -->
   <div class="banner" id="alert-banner"></div>
@@ -367,6 +403,31 @@ footer {
     </div>
   </section>
 
+  <!-- Section: 対象銘柄 -->
+  <section class="section">
+    <div class="section-title">対象銘柄（18銘柄）</div>
+    <ul class="ticker-list">
+      <li><span class="tl-code">8035</span>東京エレクトロン</li>
+      <li><span class="tl-code">6920</span>レーザーテック</li>
+      <li><span class="tl-code">9984</span>ソフトバンクグループ</li>
+      <li><span class="tl-code">6723</span>ルネサスエレクトロニクス</li>
+      <li><span class="tl-code">285A</span>キオクシアHLDG</li>
+      <li><span class="tl-code">7735</span>SCREEN HLDG</li>
+      <li><span class="tl-code">6525</span>KOKUSAI ELECTRIC</li>
+      <li><span class="tl-code">3436</span>SUMCO</li>
+      <li><span class="tl-code">4062</span>イビデン</li>
+      <li><span class="tl-code">6762</span>TDK</li>
+      <li><span class="tl-code">6981</span>村田製作所</li>
+      <li><span class="tl-code">6976</span>太陽誘電</li>
+      <li><span class="tl-code">4004</span>レゾナック・HLDG</li>
+      <li><span class="tl-code">6752</span>パナソニックHLDG</li>
+      <li><span class="tl-code">5803</span>フジクラ</li>
+      <li><span class="tl-code">5801</span>古河電気工業</li>
+      <li><span class="tl-code">5706</span>三井金属</li>
+      <li><span class="tl-code">6098</span>リクルートHLDG</li>
+    </ul>
+  </section>
+
   <!-- Section: ペアランキング -->
   <section class="section">
     <div class="section-title">ペアランキング（Top 10）</div>
@@ -385,6 +446,23 @@ footer {
           <tbody id="rank-low"></tbody>
         </table>
       </div>
+    </div>
+  </section>
+
+  <!-- Section: 相関係数の読み方 -->
+  <section class="section">
+    <div class="section-title">相関係数（ρ）の読み方</div>
+    <div class="about-block">
+      <table class="corr-table">
+        <thead><tr><th>ρの範囲</th><th>意味</th></tr></thead>
+        <tbody>
+          <tr><td><span class="corr-rho" style="color:var(--blue)">0.8 〜 1.0</span></td><td>非常に強い正の相関。ほぼ同じ方向に動く。</td></tr>
+          <tr><td><span class="corr-rho" style="color:var(--blue)">0.5 〜 0.8</span></td><td>中程度〜強い正の相関。おおむね連動する。</td></tr>
+          <tr><td><span class="corr-rho" style="color:var(--sub)">0.2 〜 0.5</span></td><td>弱い〜中程度の正の相関。やや連動する。</td></tr>
+          <tr><td><span class="corr-rho" style="color:var(--dim)">0.0 〜 0.2</span></td><td>ほぼ無相関。独立した値動きをしやすい。</td></tr>
+          <tr><td><span class="corr-rho" style="color:var(--red)">0.0 未満</span></td><td>負の相関。片方が上がるともう片方は下がりやすい。</td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
@@ -410,48 +488,19 @@ footer {
     </table>
   </section>
 
-  <!-- Section: このページについて -->
-  <section class="section">
-    <div class="section-title">このページについて</div>
-    <div class="about-block">
-      <h2 class="about-h2">AI半導体・モメンタム銘柄 18銘柄の相関係数ダッシュボード（毎朝自動更新）</h2>
-      <p>東京証券取引所に上場するAI半導体関連・高モメンタム銘柄18銘柄について、日次リターン（前日比）のピアソン相関係数を毎朝自動計算し、ヒートマップ・ペアランキング・軸銘柄ドリルダウンとして可視化しています。計算期間は10日・30日・50日から切り替え可能で、短期の急変から中期のトレンドまで銘柄間の連動性を多角的に確認できます。</p>
-      <p>「群れの強さ（平均相関）」が高いほど全銘柄が一体となって動く相場環境を示し、低下してきたときは個別株格差が広がるサインとして読み取れます。高相関ペアと低相関ペアのランキングは、資金分散・ヘッジ先検討の参考としてご活用ください。</p>
+  <!-- SEO 解説 -->
+  <section class="seo-section">
+    <h2>AI半導体・モメンタム銘柄の相関を見る意味</h2>
+    <p>相関係数は、2つの銘柄の値動きがどれだけ連動しているかを−1〜+1の数値で表します。個別株の騰落を追うだけでなく「銘柄間の関係性」を見ることで、市場の構造を俯瞰できます。AI半導体関連銘柄は同じマクロテーマ（エヌビディア決算・米中規制動向・円ドル相場）に反応しやすく、特定のニュースで群れとして一斉に動く傾向があります。こうした銘柄群の相関を継続的に観測することで、「今日の動きはテーマ全体の動き（群れ）なのか、それとも個別株固有の動き（分化）なのか」を区別する手がかりが得られます。</p>
 
-      <h3 class="about-h3">対象銘柄（18銘柄）</h3>
-      <ul class="ticker-list">
-        <li><span class="tl-code">8035</span>東京エレクトロン</li>
-        <li><span class="tl-code">6920</span>レーザーテック</li>
-        <li><span class="tl-code">9984</span>ソフトバンクグループ</li>
-        <li><span class="tl-code">6723</span>ルネサスエレクトロニクス</li>
-        <li><span class="tl-code">285A</span>キオクシアHLDG</li>
-        <li><span class="tl-code">7735</span>SCREEN HLDG</li>
-        <li><span class="tl-code">6525</span>KOKUSAI ELECTRIC</li>
-        <li><span class="tl-code">3436</span>SUMCO</li>
-        <li><span class="tl-code">4062</span>イビデン</li>
-        <li><span class="tl-code">6762</span>TDK</li>
-        <li><span class="tl-code">6981</span>村田製作所</li>
-        <li><span class="tl-code">6976</span>太陽誘電</li>
-        <li><span class="tl-code">4004</span>レゾナック・HLDG</li>
-        <li><span class="tl-code">6752</span>パナソニックHLDG</li>
-        <li><span class="tl-code">5803</span>フジクラ</li>
-        <li><span class="tl-code">5801</span>古河電気工業</li>
-        <li><span class="tl-code">5706</span>三井金属</li>
-        <li><span class="tl-code">6098</span>リクルートHLDG</li>
-      </ul>
+    <h2>「群れの強さ」が示すもの</h2>
+    <p>本サイトが表示する「平均相関係数」は、18銘柄全ペア（153ペア）の相関係数の平均値です。この値が高いときは、個別銘柄間の違いが小さく、テーマ全体が一体となって動く環境にあることを示します。逆に平均相関が低下してきたときは、個別株間で価格格差が広がり始めているサインです。平均相関の上昇と低下の転換点を継続して観測することで、相場環境の変化を早期に察知する一助となります。</p>
 
-      <h3 class="about-h3">相関係数（ρ）の読み方</h3>
-      <table class="corr-table">
-        <thead><tr><th>ρの範囲</th><th>意味</th></tr></thead>
-        <tbody>
-          <tr><td><span class="corr-rho" style="color:var(--blue)">0.8 〜 1.0</span></td><td>非常に強い正の相関。ほぼ同じ方向に動く。</td></tr>
-          <tr><td><span class="corr-rho" style="color:var(--blue)">0.5 〜 0.8</span></td><td>中程度〜強い正の相関。おおむね連動する。</td></tr>
-          <tr><td><span class="corr-rho" style="color:var(--sub)">0.2 〜 0.5</span></td><td>弱い〜中程度の正の相関。やや連動する。</td></tr>
-          <tr><td><span class="corr-rho" style="color:var(--dim)">0.0 〜 0.2</span></td><td>ほぼ無相関。独立した値動きをしやすい。</td></tr>
-          <tr><td><span class="corr-rho" style="color:var(--red)">0.0 未満</span></td><td>負の相関。片方が上がるともう片方は下がりやすい。</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <h2>高相関ペアと低相関ペアの使い方</h2>
+    <p>ペアランキングで上位（高相関）に並ぶペアは、テーマ連動性が強く、一方を保有しているとほぼ同じリスクを二重に持っている状態です。ポートフォリオを複数銘柄に分散させても、高相関ペアばかりでは実質的なリスク分散になりません。一方、低相関（またはゼロ近傍）のペアは値動きの独立性が高く、分散投資の組み合わせとして機能しやすいとされます。ただし相関は時間とともに変化するため、過去のペアランキングを絶対視せず、定期的に見直すことが重要です。</p>
+
+    <h2>なぜAI半導体銘柄は一斉に動きやすいのか</h2>
+    <p>AI半導体関連銘柄が高い相関を示す背景には、共通のファンダメンタルズ要因があります。生成AIの普及に伴うGPU・HBM・シリコンウェーハ・製造装置の需要増大は、サプライチェーン上の各社の業績をほぼ同じ方向に動かします。また、機関投資家による「AI関連銘柄パッケージ」としての売買が、個別企業の業績とは無関係に銘柄群全体を動かすことがあります。さらに円ドル相場の変動も、輸出比率の高い半導体・電子部品メーカー各社に共通して影響します。これらの要因が重なることで、個々の企業固有の材料よりも「群れ」としての動きが支配的になりやすい特性があります。</p>
   </section>
 
   <!-- Section: 注記 -->
