@@ -72,11 +72,33 @@ def to_iso_jst(dt: datetime) -> str:
 # =========================================================================
 # 株価取得（リトライ付き）
 # =========================================================================
+def _quote_latest(ticker_obj) -> tuple:
+    """
+    チャートAPIメタ（quote相当）から直近約定値と時刻を返す。
+    2026-07-06頃からYahooのチャートAPIが東証銘柄で「引け後〜翌営業日の反映まで」
+    直近セッションの日足バーを返さなくなったため、系列終端の補追に使う。
+    直近の history() 呼び出しのレスポンスを再利用するので追加リクエストは発生しない。
+    Returns: (price: float|None, dt: datetime|None)  — dt は取引所タイムゾーン
+    """
+    try:
+        meta    = ticker_obj.get_history_metadata()
+        price   = meta.get("regularMarketPrice")
+        epoch   = meta.get("regularMarketTime")
+        tz_name = meta.get("exchangeTimezoneName")
+        if price is None or epoch is None or tz_name is None:
+            return None, None
+        dt = pd.Timestamp(epoch, unit="s", tz="UTC").tz_convert(tz_name).to_pydatetime()
+        return float(price), dt
+    except Exception:
+        return None, None
+
+
 def fetch_close_series(stock: dict) -> pd.Series | None:
     ticker_str = stock["ticker"]
     for attempt in range(MAX_RETRIES):
         try:
-            hist = yf.Ticker(ticker_str).history(start=FETCH_START, auto_adjust=True)
+            t = yf.Ticker(ticker_str)
+            hist = t.history(start=FETCH_START, auto_adjust=True)
             if hist.empty:
                 raise ValueError("empty history")
             closes = hist["Close"].dropna()
@@ -84,6 +106,15 @@ def fetch_close_series(stock: dict) -> pd.Series | None:
                 raise ValueError("all NaN closes")
             closes.index = pd.DatetimeIndex(closes.index.date)
             closes.name = stock["code"]
+
+            # quote補追: 日足最終バーより新しい日付の約定があれば系列末尾に追加
+            q_val, q_dt = _quote_latest(t)
+            if (q_val is not None and q_val > 0 and q_dt is not None
+                    and pd.Timestamp(q_dt.date()) > closes.index[-1]):
+                print(f"  [補追] {ticker_str}: 日足が{closes.index[-1].date()}止まりのため"
+                      f" quote終値({q_dt.date()} {q_val})を追加")
+                closes.loc[pd.Timestamp(q_dt.date())] = float(q_val)
+
             return closes
         except Exception as e:
             print(f"  [{ticker_str}] 取得失敗({attempt + 1}/{MAX_RETRIES}): {e}")
