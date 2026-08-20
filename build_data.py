@@ -6,6 +6,7 @@ build_data.py — モメンタム銘柄相関係数 本番バッチ
 """
 
 import json
+import re
 import sys
 import time
 from datetime import datetime, timezone, timedelta
@@ -53,6 +54,18 @@ STOCKS = [
 
 SCRIPT_DIR   = Path(__file__).parent
 DATA_PATH    = SCRIPT_DIR / "data.json"
+INDEX_PATH   = SCRIPT_DIR / "index.html"
+
+# index.html 内 CODE_TO_NAME(JS定数)と同一のマッピング。銘柄コード→表示名。
+CODE_TO_NAME = {
+    '285A': 'キオクシアHLDG', '6976': '太陽誘電', '9984': 'ソフトバンクグループ',
+    '6981': '村田製作所', '8035': '東京エレクトロン', '6920': 'レーザーテック',
+    '4062': 'イビデン', '5801': '古河電気工業', '5706': '三井金属',
+    '6525': 'KOKUSAI ELECTRIC', '6723': 'ルネサスエレクトロニクス', '4004': 'レゾナック・HLDG',
+    '6762': 'TDK', '6752': 'パナソニックHLDG', '3436': 'SUMCO',
+    '7735': 'SCREEN HLDG', '6098': 'リクルートHLDG', '5803': 'フジクラ',
+}
+DEFAULT_PERIOD = "50"  # index.html の period-tab active / setPeriod('50') と一致させる
 CODE_TO_NAME = {s["code"]: s["name"] for s in STOCKS}
 
 
@@ -163,6 +176,71 @@ def build_pair_ranking(corr: pd.DataFrame, top_n: int = 10) -> tuple[list, list]
             })
     pairs.sort(key=lambda x: x["rho"], reverse=True)
     return pairs[:top_n], pairs[-top_n:][::-1]
+
+
+# =========================================================================
+# 静的HTML焼き込み(AdSense/SEO対応)
+# index.html は id指定の要素へJSが .textContent/.innerHTML を個別代入する方式
+# (herd-mean 等)のため、id属性を目印にした直接置換で焼き込む。
+# =========================================================================
+def _replace_by_id(content: str, elem_id: str, new_inner: str) -> str:
+    """id="X">... の直後(次の '<' まで)を new_inner に置換する。"""
+    pattern = re.compile(r'(id="' + re.escape(elem_id) + r'"[^>]*>)[^<]*')
+    if not pattern.search(content):
+        print(f"[bake警告] id={elem_id} が見つかりません")
+        return content
+    return pattern.sub(lambda m: m.group(1) + new_inner, content, count=1)
+
+
+def _replace_after_tag(content: str, elem_id: str, after_html: str, new_text: str) -> str:
+    """id="X">after_html の直後(次の '<' まで)を new_text に置換する。"""
+    pattern = re.compile(r'(id="' + re.escape(elem_id) + r'"[^>]*>' + re.escape(after_html) + r')[^<]*')
+    if not pattern.search(content):
+        print(f"[bake警告] id={elem_id}({after_html}) が見つかりません")
+        return content
+    return pattern.sub(lambda m: m.group(1) + new_text, content, count=1)
+
+
+def _pair_text(pair: dict | None) -> str | None:
+    if not pair:
+        return None
+    a, b, rho = pair.get("a"), pair.get("b"), pair.get("rho")
+    na = CODE_TO_NAME.get(a, a)
+    nb = CODE_TO_NAME.get(b, b)
+    return f"{a}({na}) × {b}({nb})  ρ={rho:.2f}"
+
+
+def bake_index_html(output: dict, index_path: Path) -> None:
+    if not index_path.exists():
+        print(f"[bake警告] {index_path} が見つかりません。スキップ。")
+        return
+
+    content = index_path.read_text(encoding="utf-8")
+
+    meta = output.get("_meta", {})
+    summary = output.get("summary", {})
+    pd_default = (output.get("periods") or {}).get(DEFAULT_PERIOD, {})
+
+    if meta.get("generated_at"):
+        content = _replace_after_tag(content, "meta-generated", "<b>生成</b> ", meta["generated_at"])
+    if summary.get("fetch_date"):
+        content = _replace_after_tag(content, "meta-fetch", "<b>データ</b> ", summary["fetch_date"])
+
+    stats = pd_default.get("stats") or {}
+    if stats.get("mean_corr") is not None:
+        content = _replace_by_id(content, "herd-mean", f"{stats['mean_corr']:.2f}")
+
+    top_pair = (pd_default.get("pair_ranking_high") or [None])[0]
+    bot_pair = (pd_default.get("pair_ranking_low") or [None])[0]
+    top_text = _pair_text(top_pair)
+    bot_text = _pair_text(bot_pair)
+    if top_text:
+        content = _replace_by_id(content, "herd-top", top_text)
+    if bot_text:
+        content = _replace_by_id(content, "herd-bot", bot_text)
+
+    index_path.write_text(content, encoding="utf-8")
+    print("[bake] index.html 焼き込み完了")
 
 
 # =========================================================================
@@ -308,6 +386,8 @@ def build_data() -> None:
 
     with open(DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
+
+    bake_index_html(output, INDEX_PATH)
 
     label = {"complete": "OK", "partial": "WARN"}.get(overall_status, overall_status)
     print(f"\n[{label}] data.json 書き出し完了  overall_status={overall_status}  date={today_str}")
