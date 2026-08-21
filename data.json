@@ -1,7 +1,7 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "generated_at": "2026-08-21T08:38:22+09:00",
+    "generated_at": "2026-08-21T09:06:28+09:00",
     "overall_status": "complete",
     "_status_vocab": "complete=全銘柄・全期間正常 / partial=一部除外または期間不足 / failed=計算不能"
   },
