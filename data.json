@@ -1,12 +1,12 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "generated_at": "2026-08-31T07:30:39+09:00",
+    "generated_at": "2026-09-01T07:30:41+09:00",
     "overall_status": "complete",
     "_status_vocab": "complete=全銘柄・全期間正常 / partial=一部除外または期間不足 / failed=計算不能"
   },
   "summary": {
-    "fetch_date": "2026-08-31",
+    "fetch_date": "2026-09-01",
     "common_days": 102,
     "stocks": [
       {
