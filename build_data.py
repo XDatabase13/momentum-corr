@@ -288,7 +288,7 @@ def build_data() -> None:
     days_diff   = (today_date - latest_date).days
     if days_diff > STALE_DAYS:
         msg = (f"[警告] 最新データ日付({latest_date})が取得日({today_date})より{days_diff}日古い。"
-               f"データ反映遅延の可能性。")
+               f"yfinance反映遅延の可能性。")
         alerts.append(msg)
         print(msg)
 
